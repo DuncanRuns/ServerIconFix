@@ -52,7 +52,7 @@ public class Main {
 
         instancePaths.removeIf(path -> !Files.isDirectory(path));
 
-        StringBuilder message = new StringBuilder("Add server-icon.png to these instances?");
+        StringBuilder message = new StringBuilder("Remove server-icon.png from these instances?");
         int i = 0;
         for (Path instancePath : instancePaths.stream().sorted().collect(Collectors.toList())) {
             message.append("\n").append(instancePath);
@@ -62,7 +62,7 @@ public class Main {
             }
         }
 
-        if (0 != JOptionPane.showConfirmDialog(null, message, "ServerIconFix", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE))
+        if (0 != JOptionPane.showConfirmDialog(null, message, "ServerIconUnfix", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE))
             return;
 
         i = 0;
@@ -71,23 +71,24 @@ public class Main {
                 continue;
             }
             try {
-                copyResourceToFile("/server-icon.png", instancePath.resolve("server-icon.png"));
-                i++;
+                Path serverIconPath = instancePath.resolve("server-icon.png");
+                if (Files.deleteIfExists(serverIconPath))
+                    i++;
             } catch (IOException ignored) {
-                System.out.println("Failed to copy to " + instancePath);
+                System.out.println("Failed to remove for " + instancePath);
             }
         }
-        JOptionPane.showMessageDialog(null, "server-icon.png has been added to " + i + " instances.");
+        JOptionPane.showMessageDialog(null, "server-icon.png has been removed from " + i + " instances.");
     }
 
     private static void askForInstancesFolderAndAdd(Set<Path> instancePaths) {
-        if (0 != JOptionPane.showConfirmDialog(null, "No instances have been found automatically. Browse for instances folder?", "ServerIconFix", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+        if (0 != JOptionPane.showConfirmDialog(null, "No instances have been found automatically. Browse for instances folder?", "ServerIconUnfix", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
 
         JFileChooser jfc = new JFileChooser();
         jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        jfc.setDialogTitle("ServerIconFix: Get Instances Folder");
+        jfc.setDialogTitle("ServerIconUnfix: Get Instances Folder");
         jfc.setAcceptAllFileFilterUsed(false);
 
         int val = jfc.showOpenDialog(null);
@@ -106,7 +107,7 @@ public class Main {
             addInstancesFromInstanceFolderToPaths(selectedInstancesFolder.getParent(), instancePaths);
         } else {
             String[] instanceFolders = selectedInstancesFolder.toFile().list();
-            Runnable showNoneFound = () -> JOptionPane.showMessageDialog(null, "Failed to find any instances from selected folder!", "ServerIconFix", JOptionPane.WARNING_MESSAGE);
+            Runnable showNoneFound = () -> JOptionPane.showMessageDialog(null, "Failed to find any instances from selected folder!", "ServerIconUnfix", JOptionPane.WARNING_MESSAGE);
 
             if (instanceFolders == null || instanceFolders.length == 0) {
                 showNoneFound.run();
