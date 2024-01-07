@@ -1,0 +1,43 @@
+plugins {
+    id 'java'
+}
+
+group = 'me.duncanruns.servericonfix'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+    maven { url "https://maven.fabricmc.net/" }
+}
+
+
+configurations {
+    // provided configuration defines configurations which should also be included in the jar
+    provided
+    implementation.extendsFrom(provided)
+}
+
+dependencies {
+    // Implemented to crash on fabric mod attempt
+    implementation 'net.fabricmc:fabric-loader:0.15.0'
+
+    provided 'com.google.code.gson:gson:2.10'
+}
+
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    manifest {
+        attributes 'Main-Class': 'me.duncanruns.servericonfix.Main',
+                'Multi-Release': true,
+                'Implementation-Version': version
+    }
+    // Include dependencies marked as provided
+    from configurations.provided.asFileTree.files.collect { zipTree(it) }
+}
+
+test {
+    useJUnitPlatform()
+}
